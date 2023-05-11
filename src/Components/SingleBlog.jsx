@@ -16,32 +16,46 @@ import { Favorite, FavoriteBorder } from "@mui/icons-material";
 
 import { changeLike, chagneLikeOfABlog } from "../redux";
 import { toast } from "react-toastify";
+import { useState } from "react";
 
 const SingleProduct = () => {
+  const [disabled, setDisabled] = useState(false);
   const params = useParams();
 
   const dispatch = useDispatch();
+
   const stateOfBlogs = useSelector((state) => state.blogs);
+
+  console.log(stateOfBlogs.likes);
 
   const singleBlog = stateOfBlogs.blogs.find(
     (blog) => blog.id === params.BlogId
   );
 
-  const blogLike = stateOfBlogs.likes.find((blog) => blog.id === params.BlogId);
+  // console.log(singleBlog);
+
+  const like = stateOfBlogs.likes.find((blog) => blog.blogId === params.BlogId);
+
+  console.log(like, "single");
 
   const hanldeChecked = async () => {
+    setDisabled(true);
+    console.log("handleChecked");
+    console.log("id: ", like.id);
     const resp = await chagneLikeOfABlog({
-      id: blogLike.id,
-      checked: !blogLike.checked,
+      id: like.id,
+      checked: !like.checked,
     });
 
-    if (resp === 200) {
+    if (resp) {
+      setDisabled(false);
       dispatch(
         changeLike({
-          id: blogLike.id,
+          id: like.blogId,
         })
       );
     } else {
+      setDisabled(false);
       toast.error("Please Check Your Internet Connection");
     }
   };
@@ -50,6 +64,10 @@ const SingleProduct = () => {
     <Box mt={2} mx={2}>
       {stateOfBlogs.loading ? (
         <h3>Loading</h3>
+      ) : singleBlog === undefined ? (
+        <h3>Not fount</h3>
+      ) : stateOfBlogs.failed ? (
+        <h3>Please Check Your Internet Connection</h3>
       ) : (
         <Grid container columns={12} justifyContent={"center"}>
           <Grid xs={12} sm={12} md={10}>
@@ -69,8 +87,9 @@ const SingleProduct = () => {
                 <CardContent>{singleBlog.description}</CardContent>
                 <Tooltip title="Like" placement="left" arrow>
                   <Checkbox
+                    disabled={disabled}
                     icon={<FavoriteBorder />}
-                    checked={blogLike.checked}
+                    checked={like.checked}
                     onClick={hanldeChecked}
                     checkedIcon={
                       <Favorite

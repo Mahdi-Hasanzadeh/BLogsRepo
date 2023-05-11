@@ -1,7 +1,7 @@
 import { Box, Button, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
 import { useState } from "react";
-
+import LoadingButton from "@mui/lab/LoadingButton";
 import {
   addBlog,
   addBlogToDatabase,
@@ -12,11 +12,18 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { nanoid } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
+import { SendRounded } from "@mui/icons-material";
+import { useSelector } from "react-redux";
+
 const CreateBlog = () => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
   });
+
+  const [loading, setLoading] = useState(false);
+
+  const state = useSelector((state) => state.blogs);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -34,21 +41,24 @@ const CreateBlog = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (formData.title !== "" && formData.description !== "") {
-      const id = nanoid();
-      const resp = await addBlogToDatabase({
-        id,
+      // const id = nanoid();
+      setLoading(true);
+      const idForBlog = await addBlogToDatabase({
         date: new Date().toLocaleDateString(),
         title: formData.title,
         description: formData.description,
       });
+      console.log("blog is making");
 
-      if (resp === 201) {
+      if (!idForBlog.fail) {
         // toast.success("Post Saved Successfully");
-        const res = await addLikeToDatabase(id);
-        if (res === 201) {
+        const idForLike = await addLikeToDatabase(idForBlog);
+        // console.log(res, "id");
+        if (!idForLike.fail) {
+          setLoading(false);
           dispatch(
             addBlog({
-              id,
+              id: idForBlog,
               date: new Date().toLocaleDateString(),
               title: formData.title,
               description: formData.description,
@@ -56,16 +66,23 @@ const CreateBlog = () => {
           );
           dispatch(
             addLike({
-              id,
+              blogId: idForBlog,
+              id: idForLike,
               checked: false,
             })
           );
           navigate("/BLogs");
+          toast.success("Post Created Successfully");
+        } else {
+          setLoading(false);
+          toast.error(`${resp},Please Check Your Internet Connection`);
         }
       } else {
+        setLoading(false);
         toast.error(`${resp},Please Check Your Internet Connection`);
       }
     } else {
+      setLoading(false);
       toast.error("Fill out the form");
     }
   };
@@ -115,9 +132,22 @@ const CreateBlog = () => {
               />
             </Grid>
             <Grid xs={6}>
-              <Button type="submit" variant="contained" fullWidth>
-                Save Post
-              </Button>
+              <LoadingButton
+                disabled={state.failed}
+                fullWidth
+                size="small"
+                type="submit"
+                endIcon={<SendRounded />}
+                loading={loading}
+                loadingPosition="end"
+                variant="contained"
+              >
+                {state.failed
+                  ? "Internet Disconneted"
+                  : loading
+                  ? "Creating Your Post ..."
+                  : "Save Post"}
+              </LoadingButton>
             </Grid>
           </Grid>
         </Typography>

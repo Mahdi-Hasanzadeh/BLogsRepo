@@ -4,79 +4,172 @@ import {
   createAsyncThunk,
 } from "@reduxjs/toolkit";
 
+import { database } from "./firebaseConfig";
+
+import {
+  getFirestore,
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore";
+import "firebase/firestore";
 const url = "http://localhost:9000/";
 
 export const getBlogs = createAsyncThunk(
   "blogs/getBlogs",
   async (arg, thunkAPI) => {
     try {
-      const response = await fetch(`${url}blogs`);
-      const responseForLikes = await fetch(`${url}likes`);
-      if (response.status === 200 && responseForLikes.status === 200) {
-        const blogs = await response.json();
-        const likes = await responseForLikes.json();
-        // console.log(blogs);
+      const dbInstance = collection(database, "blogs");
+      const dbInstactForLike = collection(database, "likes");
+      const response = await getDocs(dbInstance);
+      const respForLike = await getDocs(dbInstactForLike);
+
+      if (response.docs.length === 0) {
+        return {
+          blogs: [],
+          likes: [],
+        };
+      } else if (response.docs.length > 0 && respForLike.docs.length > 0) {
+        const blogs = response.docs.map((item) => {
+          // console.log("blog ID: ", item.id);
+          return {
+            id: item.id,
+            ...item.data(),
+          };
+        });
+        const likes = respForLike.docs.map((item) => {
+          // console.log("like ID: ", item.id);
+          return {
+            id: item.id,
+            ...item.data(),
+          };
+        });
         return {
           blogs,
           likes,
         };
       } else {
-        throw "something Wrong happened";
+        throw "something gone wrong";
       }
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.message);
+      // console.log(err, "error part");
+      return thunkAPI.rejectWithValue(err);
     }
   }
 );
+
 export const addLikeToDatabase = async (id) => {
   try {
-    const resp = await fetch(`${url}likes`, {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify({
-        id,
-        checked: false,
-      }),
+    const dbInstance = collection(database, "likes");
+    const response = await addDoc(dbInstance, {
+      blogId: id,
+      checked: false,
     });
-    return resp.status;
-  } catch (err) {
-    return err.message;
-  }
 
+    if (response.id) {
+      // console.log(response.id);
+      return response.id;
+    } else {
+      throw "something gone wrong";
+    }
+  } catch (err) {
+    console.log(err);
+    return false;
+  }
+  // const resp = await fetch(`${url}likes`, {
+  //   method: "POST",
+  //   headers: {
+  //     "Content-type": "application/json",
+  //   },
+  //   body: JSON.stringify({
+  //     id,
+  //     checked: false,
+  //   }),
+  // });
+  // return resp.status;
   // console.log("creating likes")
 };
 
 export const addBlogToDatabase = async (newBlog) => {
   try {
-    const response = await fetch(`${url}blogs`, {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify(newBlog),
-    });
-    return response.status;
+    const dbInstance = collection(database, "blogs");
+
+    const response = await addDoc(dbInstance, newBlog);
+    // console.log(response.id);
+    if (response.id) {
+      return response.id;
+    } else {
+      return false;
+    }
   } catch (err) {
-    return err.message;
+    return false;
   }
+
+  // const response = await fetch(`${url}blogs`, {
+  //   method: "POST",
+  //   headers: {
+  //     "Content-type": "application/json",
+  //   },
+  //   body: JSON.stringify(newBlog),
+  // });
+  // return response.status;
 };
 
 export const chagneLikeOfABlog = async (arg) => {
   try {
-    const response = await fetch(`${url}likes/${arg.id}`, {
-      method: "PUT",
-
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify(arg),
+    const docRef = doc(database, "likes", arg.id);
+    console.log(docRef);
+    updateDoc(docRef, {
+      checked: arg.checked,
     });
 
-    return response.status;
+    return true;
   } catch (err) {
-    return err.message;
+    // console.log(err.message);
+    return false;
+  }
+  // const response = await updateDoc(dbInstance, "likes", 1, {
+  //   checked: true,
+  // });
+
+  // try {
+  //   const response = await fetch(`${url}likes/${arg.id}`, {
+  //     method: "PUT",
+
+  //     headers: {
+  //       "Content-type": "application/json",
+  //     },
+  //     body: JSON.stringify(arg),
+  //   });
+
+  //   return response.status;
+  // } catch (err) {
+  //   return err.message;
+  // }
+};
+
+export const deleteBLogById = async (id) => {
+  try {
+    const docRef = doc(database, "blogs", id);
+    const response = await deleteDoc(docRef);
+    // console.log(response);
+    return true;
+  } catch (err) {
+    console.log("not deleted");
+    return false;
+  }
+};
+
+export const deleteLikeById = async (id) => {
+  try {
+    const docRef = doc(database, "likes", id);
+    const response = await deleteDoc(docRef);
+    return true;
+  } catch (err) {
+    return false;
   }
 };
 
@@ -86,18 +179,30 @@ const blogsSlice = createSlice({
     loading: true,
     blogs: [],
     likes: [],
+    failed: false,
   },
   reducers: {
     addBlog: (state, action) => {
-      // console.log(action);
+      console.log(action);
       state.blogs.push(action.payload);
     },
     changeLike: (state, action) => {
-      const like = state.likes.find((item) => item.id === action.payload.id);
+      console.log("changeLike: ", action.payload);
+      console.log("state data: ", state.likes);
+      const like = state.likes.find(
+        (item) => item.blogId === action.payload.id
+      );
+      console.log(like, "change Like");
       like.checked = !like.checked;
     },
     addLike: (state, action) => {
       state.likes.push(action.payload);
+    },
+    deleteBlog: (state, action) => {
+      state.blogs = state.blogs.filter((blog) => blog.id !== action.payload);
+    },
+    deleteLike: (state, action) => {
+      state.likes = state.likes.filter((like) => like.id !== action.payload);
     },
   },
 
@@ -107,31 +212,42 @@ const blogsSlice = createSlice({
     },
     [getBlogs.fulfilled]: (state, action) => {
       state.loading = false;
-
+      console.log("fullfilled", action.payload);
       state.blogs = action.payload.blogs;
       state.likes = action.payload.likes;
     },
     [getBlogs.rejected]: (state, action) => {
-      state.loading = false;
+      (state.blogs = []), (state.likes = []), (state.loading = false);
+      state.failed = true;
       console.log(action.payload);
     },
   },
 });
 
-// const blogLikeSlice = createSlice({
-//   name:'blogLike',
-//   initialState:{
-
-//   }
-// })
-
-export const { addBlog, changeLike, addLike } = blogsSlice.actions;
+export const { addBlog, changeLike, addLike, deleteBlog, deleteLike } =
+  blogsSlice.actions;
 
 export const store = configureStore({
   reducer: {
     blogs: blogsSlice.reducer,
   },
 });
+
+// (() => {
+//   const dbInstance = collection(database, "blogs");
+//   addDoc(dbInstance, {
+//     date: "5/8/2023",
+//     title: "First Post",
+//     description: "Hello everyone, this is my first post",
+//   });
+// })();
+
+// () => {
+//   const dbInstance = collection(database, "likes");
+//   addDoc(dbInstance,{
+
+//   })
+// };
 
 //Actions
 // const actions01 = {
