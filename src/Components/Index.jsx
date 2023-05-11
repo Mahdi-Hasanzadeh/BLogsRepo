@@ -47,12 +47,13 @@ const Index = () => {
                 }}
               >
                 Hello Friends <br />
-                Welcome to my new Project. In this project we are workin on a
+                Welcome to my new Project. In this project we are working on a
                 blog where you can add post very easily.
                 <br />
                 In this project, for designing Part we use{" "}
                 <a
-                  href=""
+                  href="https://mui.com/"
+                  target="_blank"
                   style={{
                     textDecoration: "underline",
                   }}
@@ -61,7 +62,8 @@ const Index = () => {
                 </a>{" "}
                 and for managing the state of the web app, we use{" "}
                 <a
-                  href=""
+                  href="https://redux-toolkit.js.org/"
+                  target="_blank"
                   style={{
                     textDecoration: "underline",
                   }}
@@ -71,7 +73,8 @@ const Index = () => {
                 which is very powerfull for managing the state. For Routing of
                 our web app pages, we use{" "}
                 <a
-                  href=""
+                  href="https://reactrouter.com/en/main"
+                  target="_blank"
                   style={{
                     textDecoration: "underline",
                   }}
@@ -82,7 +85,8 @@ const Index = () => {
                 that we can easily navigate through the pages whithout any
                 problem. For database part, We use{" "}
                 <a
-                  href=""
+                  href="https://firebase.google.com/"
+                  target="_blank"
                   style={{
                     textDecoration: "underline",
                   }}
