@@ -36,6 +36,7 @@ const Blogs = ({ blogs }) => {
 
   const [confirmDelete, setConfirmDelete] = useState(true);
 
+  const [id, setId] = useState(null);
   //   console.log(blogs.blogs[0].title || "not found");
 
   // console.log(blogs);
@@ -54,7 +55,7 @@ const Blogs = ({ blogs }) => {
   // console.log(blogs.likes);
 
   const handleDelete = async (blogId) => {
-    // console.log("delete", blogId);
+    console.log("delete", blogId);
     setDisabled(true);
 
     const response = await deleteBLogById(blogId);
@@ -80,7 +81,7 @@ const Blogs = ({ blogs }) => {
       setDisabled(false);
       setConfirmDelete(true);
     }
-    // console.log(like.id);
+    console.log(like.id);
   };
 
   const handleDialog = () => {
@@ -148,6 +149,8 @@ const Blogs = ({ blogs }) => {
                           loadingPosition="end"
                           onClick={() => {
                             setDialogOpen(true);
+                            setId(blog.id);
+                            // handleDelete(blog.id);
                           }}
                           endIcon={<DeleteForeverRounded />}
                           sx={{
@@ -156,48 +159,6 @@ const Blogs = ({ blogs }) => {
                         >
                           {disabled ? "Deleting Post" : "Delete"}
                         </LoadingButton>
-                        <Dialog
-                          fullWidth
-                          open={dialogOpen}
-                          onClose={handleDialog}
-                        >
-                          <DialogTitle>Delete Post Confirmation</DialogTitle>
-                          <DialogContent>
-                            <DialogContentText>
-                              <Typography
-                                variant="body1"
-                                fontFamily={"san-serif"}
-                                fontSize={19}
-                                mb={2}
-                              >
-                                Confirm you want to delete this post by typing
-                                post:
-                              </Typography>
-                              <TextField
-                                placeholder="post"
-                                size="small"
-                                fullWidth
-                                onChange={handleChangeDeleteWord}
-                              />
-                            </DialogContentText>
-                          </DialogContent>
-                          <DialogActions>
-                            <Button onClick={handleDialog} variant="contained">
-                              Cancel
-                            </Button>
-                            <Button
-                              disabled={confirmDelete}
-                              onClick={() => {
-                                handleDialog();
-                                handleDelete(blog.id);
-                              }}
-                              variant="contained"
-                              color="error"
-                            >
-                              Delete
-                            </Button>
-                          </DialogActions>
-                        </Dialog>
                       </CardActions>
                     </Card>
                   </Grid>
@@ -205,6 +166,44 @@ const Blogs = ({ blogs }) => {
               })
             )}
           </Grid>
+          <Dialog fullWidth open={dialogOpen} onClose={handleDialog}>
+            <DialogTitle>Delete Post Confirmation</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                <Typography
+                  variant="body1"
+                  fontFamily={"san-serif"}
+                  fontSize={19}
+                  mb={2}
+                >
+                  Confirm you want to delete this post by typing post:
+                </Typography>
+                <TextField
+                  placeholder="post"
+                  size="small"
+                  fullWidth
+                  onChange={handleChangeDeleteWord}
+                />
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleDialog} variant="contained">
+                Cancel
+              </Button>
+
+              <Button
+                disabled={confirmDelete}
+                onClick={() => {
+                  handleDelete(id);
+                  handleDialog();
+                }}
+                variant="contained"
+                color="error"
+              >
+                Delete
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Box>
       )}
     </>
