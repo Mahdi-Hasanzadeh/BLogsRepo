@@ -81,7 +81,7 @@ const Blogs = ({ blogs }) => {
       setDisabled(false);
       setConfirmDelete(true);
     }
-    console.log(like.id);
+    // console.log(like.id);
   };
 
   const handleDialog = () => {
@@ -171,10 +171,12 @@ const Blogs = ({ blogs }) => {
             <DialogContent>
               <DialogContentText>
                 <Typography
+                  component={"span"}
+                  display={"block"}
                   variant="body1"
                   fontFamily={"san-serif"}
                   fontSize={19}
-                  mb={2}
+                  mb={3}
                 >
                   Confirm you want to delete this post by typing post:
                 </Typography>
@@ -183,6 +185,8 @@ const Blogs = ({ blogs }) => {
                   size="small"
                   fullWidth
                   onChange={handleChangeDeleteWord}
+                  variant="standard"
+                  label="Delete Confirmation"
                 />
               </DialogContentText>
             </DialogContent>
