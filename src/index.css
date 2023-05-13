@@ -81,3 +81,28 @@ button:focus-visible {
   /* scale: 0.9; */
   animation: card 1.5s ease;
 }
+
+@keyframes shake {
+  from {
+    translate: -3px;
+  }
+  to {
+    translate: 3px;
+  }
+}
+
+@keyframes stop {
+  from {
+    translate: 0px;
+  }
+  to {
+    translate: 0px;
+  }
+}
+.commentButton {
+  animation: shake 2.5s infinite;
+}
+
+.commentButton:hover {
+  animation: stop;
+}

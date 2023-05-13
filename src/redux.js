@@ -7,17 +7,18 @@ import {
 import { database } from "./firebaseConfig";
 
 import {
-  getFirestore,
   addDoc,
   collection,
   doc,
   getDocs,
   updateDoc,
   deleteDoc,
+  getDoc,
 } from "firebase/firestore";
-import "firebase/firestore";
-const url = "http://localhost:9000/";
+// import "firebase/firestore";
+// const url = "http://localhost:9000/";
 
+// Get Blogs from Database
 export const getBlogs = createAsyncThunk(
   "blogs/getBlogs",
   async (arg, thunkAPI) => {
@@ -61,6 +62,7 @@ export const getBlogs = createAsyncThunk(
   }
 );
 
+// Add Like to Database
 export const addLikeToDatabase = async (id) => {
   try {
     const dbInstance = collection(database, "likes");
@@ -93,31 +95,25 @@ export const addLikeToDatabase = async (id) => {
   // console.log("creating likes")
 };
 
+// Add Blog to Database
 export const addBlogToDatabase = async (newBlog) => {
   try {
     const dbInstance = collection(database, "blogs");
-
+    // console.log(dbInstance);
     const response = await addDoc(dbInstance, newBlog);
-    // console.log(response.id);
+    console.log(response.id);
     if (response.id) {
       return response.id;
     } else {
-      return false;
+      throw "false";
     }
   } catch (err) {
+    // console.log(err.message);
     return false;
   }
-
-  // const response = await fetch(`${url}blogs`, {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-type": "application/json",
-  //   },
-  //   body: JSON.stringify(newBlog),
-  // });
-  // return response.status;
 };
 
+// Update Like at Database
 export const chagneLikeOfABlog = async (arg) => {
   try {
     const docRef = doc(database, "likes", arg.id);
@@ -149,6 +145,34 @@ export const chagneLikeOfABlog = async (arg) => {
   // } catch (err) {
   //   return err.message;
   // }
+};
+
+// Add Comment of a Specific Blog to Database
+
+export const addCommentOfBlogToDatabase = async (
+  blogId,
+  fullName,
+  comment,
+  date
+) => {
+  try {
+    const docRef = collection(database, "comments");
+
+    const response = await addDoc(docRef, {
+      blogId,
+      fullName,
+      comment,
+      date,
+    });
+    if (response.id) {
+      return response.id;
+    } else {
+      throw "error";
+    }
+  } catch (err) {
+    console.log("error");
+    return false;
+  }
 };
 
 export const deleteBLogById = async (id) => {
@@ -224,12 +248,64 @@ const blogsSlice = createSlice({
   },
 });
 
+export const getComments = createAsyncThunk(
+  "blogs/comments",
+  async (arg, thunkAPI) => {
+    try {
+      const docRef = collection(database, "comments");
+
+      const response = await getDocs(docRef);
+      const data = response.docs.map((item) => {
+        return {
+          id: item.id,
+          ...item.data(),
+        };
+      });
+      return data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err);
+    }
+  }
+);
+
+const commentSlice = createSlice({
+  name: "comments",
+  initialState: {
+    loading: false,
+    failed: false,
+    comments: [],
+  },
+  reducers: {
+    addComment: (state, action) => {
+      state.comments.push(action.payload);
+    },
+  },
+  extraReducers: {
+    [getComments.pending]: (state, action) => {
+      state.loading = true;
+    },
+    [getComments.fulfilled]: (state, action) => {
+      state.loading = false;
+      state.comments = action.payload;
+      // console.log("comments", action.payload);
+    },
+    [getComments.rejected]: (state, action) => {
+      state.failed = true;
+      state.loading = false;
+      console.log(action.payload, "rejected");
+    },
+  },
+});
+
 export const { addBlog, changeLike, addLike, deleteBlog, deleteLike } =
   blogsSlice.actions;
+
+export const { addComment } = commentSlice.actions;
 
 export const store = configureStore({
   reducer: {
     blogs: blogsSlice.reducer,
+    comments: commentSlice.reducer,
   },
 });
 

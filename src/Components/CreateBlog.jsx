@@ -44,7 +44,7 @@ const CreateBlog = () => {
       // const id = nanoid();
       setLoading(true);
       const idForBlog = await addBlogToDatabase({
-        date: new Date().toTimeString(),
+        date: new Date().toLocaleString(),
         title: formData.title,
         description: formData.description,
       });
