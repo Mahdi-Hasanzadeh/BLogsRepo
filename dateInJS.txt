@@ -1,0 +1,15 @@
+date methods in javascript:
+
+const date = new Date().toISOString();  // return the date base on ISO standard
+
+import {formatDistanceToNow, parseISO} from "date-fns"
+
+const dateFromNow = formatDistanceToNow(new Date(date));
+or
+const dateFromNoW = formatDistanceToNow(parseISO(date));
+
+how to sort blogs based on the Data:
+
+const sorted = blogs.blogs
+    .slice()
+    .sort((a, b) => a.date.localeCompare(b.date));

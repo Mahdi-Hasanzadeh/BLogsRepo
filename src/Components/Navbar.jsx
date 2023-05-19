@@ -22,7 +22,7 @@ import { NavLink, Outlet } from "react-router-dom";
 const pages = ["Home", "BLogs"];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
 
-const Navabar = () => {
+const Navabar = ({ userInfo }) => {
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
 
@@ -164,7 +164,10 @@ const Navabar = () => {
             <Box sx={{ flexGrow: 0 }}>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                  <Avatar
+                    alt={userInfo.email.toUpperCase()}
+                    src="/static/images/avatar/2.jpg"
+                  />
                 </IconButton>
               </Tooltip>
               <Menu

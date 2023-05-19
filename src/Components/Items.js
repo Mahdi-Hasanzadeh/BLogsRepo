@@ -3,3 +3,5 @@ export { default as Index } from "./Index.jsx";
 export { default as Blogs } from "./BLogs.jsx";
 export { default as SingleBlog } from "./SingleBlog.jsx";
 export { default as CreateBlog } from "./CreateBlog.jsx";
+
+export { default as LoginPage } from "./LoginPage.jsx";

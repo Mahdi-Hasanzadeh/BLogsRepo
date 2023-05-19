@@ -1,5 +1,6 @@
 import { Box, Button, TextField, Typography } from "@mui/material";
-import Grid from "@mui/material/Unstable_Grid2";
+// import Grid from "@mui/material/Unstable_Grid2";
+import Grid from "@mui/material/Grid";
 import { useState } from "react";
 import LoadingButton from "@mui/lab/LoadingButton";
 import {
@@ -48,7 +49,8 @@ const CreateBlog = () => {
         title: formData.title,
         description: formData.description,
       });
-      console.log("blog is making");
+
+      console.log("creating new Blog");
 
       if (!idForBlog.fail) {
         // toast.success("Post Saved Successfully");
@@ -56,21 +58,25 @@ const CreateBlog = () => {
         // console.log(res, "id");
         if (!idForLike.fail) {
           setLoading(false);
-          dispatch(
-            addBlog({
-              id: idForBlog,
-              date: new Date().toLocaleDateString(),
-              title: formData.title,
-              description: formData.description,
-            })
-          );
-          dispatch(
-            addLike({
-              blogId: idForBlog,
-              id: idForLike,
-              checked: false,
-            })
-          );
+          // dispatch(
+          //   addBlog({
+          //     id: idForBlog,
+          //     date: new Date().toLocaleDateString(),
+          //     title: formData.title,
+          //     description: formData.description,
+          //   })
+          // );
+          dispatch(addBlog(idForBlog, formData.title, formData.description));
+          // dispatch(
+          //   addLike({
+          //     blogId: idForBlog,
+          //     id: idForLike,
+          //     checked: false,
+          //   })
+          // );
+
+          dispatch(addLike(idForBlog, idForLike));
+
           navigate("/BLogs");
           toast.success("Post Created Successfully");
         } else {
@@ -104,7 +110,7 @@ const CreateBlog = () => {
             justifyContent={"center"}
             mt={3}
           >
-            <Grid xs={8}>
+            <Grid item xs={8}>
               <TextField
                 fullWidth
                 variant="filled"
@@ -118,7 +124,7 @@ const CreateBlog = () => {
               />
             </Grid>
 
-            <Grid xs={8}>
+            <Grid item xs={8}>
               <TextField
                 fullWidth
                 variant="filled"
@@ -131,7 +137,7 @@ const CreateBlog = () => {
                 onChange={handleChange}
               />
             </Grid>
-            <Grid xs={6}>
+            <Grid item xs={6}>
               <LoadingButton
                 disabled={state.failed}
                 fullWidth

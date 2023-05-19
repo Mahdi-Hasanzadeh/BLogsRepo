@@ -1,6 +1,8 @@
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import Grid from "@mui/material/Unstable_Grid2";
+// import Grid from "@mui/material/Unstable_Grid2";
+import Grid from "@mui/material/Grid";
+
 import {
   Avatar,
   Box,
@@ -10,6 +12,7 @@ import {
   CardActions,
   CardContent,
   CardHeader,
+  CardMedia,
   Checkbox,
   Fade,
   Grow,
@@ -45,7 +48,10 @@ import LoadingButton from "@mui/lab/LoadingButton";
 
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
+import Loading from "./Loading";
+import FailedComponent from "./FailedComp";
 
+import waterSplash from "../assets/water-splash.jpg";
 const SingleProduct = () => {
   const [disabled, setDisabled] = useState(false);
   const [showComment, setShowComment] = useState(false);
@@ -144,12 +150,13 @@ const SingleProduct = () => {
   };
 
   useEffect(() => {
+    // console.log("getComments");
     dispatch(getComments());
   }, []);
 
   const commentsState = useSelector((state) => state.comments);
 
-  console.log(commentsState, "single Blog");
+  // console.log(commentsState, "single Blog");
 
   const commentsOfBlog = commentsState.comments.filter(
     (comment) => comment.blogId === params.BlogId
@@ -164,15 +171,22 @@ const SingleProduct = () => {
   return (
     <Box mt={2} mx={2}>
       {stateOfBlogs.loading ? (
-        <h3>Loading</h3>
+        <Box
+          sx={{
+            textAlign: "center",
+          }}
+        >
+          <Loading />
+        </Box>
       ) : singleBlog === undefined ? (
         <h3>Not fount</h3>
       ) : stateOfBlogs.failed ? (
-        <h3>Please Check Your Internet Connection</h3>
+        <FailedComponent />
       ) : (
         <>
           <Grid container columns={12}>
-            <Grid xs={12} sm={12} md={6}>
+            {/* Card Grid */}
+            <Grid item xs={12} sm={12} md={6}>
               <Fade
                 in={true}
                 style={{
@@ -182,17 +196,25 @@ const SingleProduct = () => {
                 <Card
                   sx={{
                     // width: "350px",
-                    padding: 2,
                     borderTopRightRadius: "20%",
                   }}
-                  elevation={24}
+                  elevation={12}
                 >
                   <CardActionArea>
                     <CardHeader
                       title={singleBlog.title}
                       subheader={singleBlog.date}
                     />
-                    <CardContent>{singleBlog.description}</CardContent>
+                    {/* <CardMedia
+                      component={"img"}
+                      height="140"
+                      src={waterSplash}
+                    /> */}
+                    <CardContent>
+                      <Typography variant="h6">
+                        {singleBlog.description}
+                      </Typography>
+                    </CardContent>
                     <Tooltip title="Like" placement="top" arrow>
                       <Checkbox
                         disabled={disabled}
@@ -252,7 +274,7 @@ const SingleProduct = () => {
                 md={6}
                 sx={{
                   overflowY: "scroll",
-                  height: isMdUp ? "39dvh" : "50dvh",
+                  height: isMdUp ? "50dvh" : "50dvh",
 
                   position: "relative",
                 }}
@@ -262,7 +284,13 @@ const SingleProduct = () => {
                 </Typography>
                 <List sx={{ width: "100%" }}>
                   {commentsState.loading ? (
-                    <h3>loading...</h3>
+                    <Box
+                      sx={{
+                        textAlign: "center",
+                      }}
+                    >
+                      <Loading />
+                    </Box>
                   ) : commentsState.failed ? (
                     <h3>Loading Failed ,click here to reload</h3>
                   ) : commentsOfBlog.length === 0 ? (
@@ -270,7 +298,7 @@ const SingleProduct = () => {
                   ) : (
                     commentsOfBlog.map((comment, index) => {
                       return (
-                        <ListItem alignItems="flex-start">
+                        <ListItem key={index} alignItems="flex-start">
                           <ListItemAvatar>
                             <Avatar src="" alt="img" />
                           </ListItemAvatar>
@@ -318,7 +346,7 @@ const SingleProduct = () => {
               justifyContent={"center"}
               mx={4}
             >
-              <Grid xs={10} mt={3}>
+              <Grid item xs={10} mt={3}>
                 <Typography variant="h6" textAlign={"center"}>
                   Write your comment here{" "}
                   {
@@ -330,31 +358,29 @@ const SingleProduct = () => {
                   }
                 </Typography>
               </Grid>
-              <Grid xs={12} sm={6}>
+              <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   fullWidth
                   name="fullname"
                   placeholder="Full Name"
                   variant="filled"
-                  size="small"
-                  label="fullName"
+                  label="FullName"
                   value={formData.fullname}
                   onChange={handleChange}
                 />
               </Grid>
-              <Grid xs={12} sm={6}>
+              <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   fullWidth
                   name="comment"
                   placeholder="Your Comment Here..."
                   variant="filled"
-                  size="small"
                   label="Comment"
                   value={formData.comment}
                   onChange={handleChange}
                 />
               </Grid>
-              <Grid xs={6} display={"flex"} justifyContent={"center"}>
+              <Grid item xs={6} display={"flex"} justifyContent={"center"}>
                 <LoadingButton
                   loading={loadingButton}
                   variant="contained"

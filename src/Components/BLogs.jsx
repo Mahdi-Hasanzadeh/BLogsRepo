@@ -1,4 +1,8 @@
-import { Create, DeleteForeverRounded } from "@mui/icons-material";
+import {
+  Create,
+  DeleteForeverRounded,
+  MoreVertRounded,
+} from "@mui/icons-material";
 import {
   TextField,
   Typography,
@@ -14,11 +18,15 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
+  IconButton,
+  Avatar,
+  CardMedia,
 } from "@mui/material";
 
 import LoadingButton from "@mui/lab/LoadingButton";
 
-import Grid from "@mui/material/Unstable_Grid2";
+// import Grid from "@mui/material/Unstable_Grid2";
+import Grid from "@mui/material/Grid";
 import { Link, useNavigate } from "react-router-dom";
 import {
   deleteBLogById,
@@ -29,7 +37,19 @@ import {
 import { toast } from "react-toastify";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
+
+import Loading from "./Loading";
+import FailedComponent from "./FailedComp";
+
+import watersplash from "../assets/water-splash.jpg";
+
+import { formatDistanceToNow, parseISO } from "date-fns";
+
 const Blogs = ({ blogs }) => {
+  const sortedBlogs = blogs.blogs
+    .slice()
+    .sort((a, b) => a.date.localeCompare(b.date));
+
   const [disabled, setDisabled] = useState(false);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -37,6 +57,7 @@ const Blogs = ({ blogs }) => {
   const [confirmDelete, setConfirmDelete] = useState(true);
 
   const [id, setId] = useState(null);
+
   //   console.log(blogs.blogs[0].title || "not found");
 
   // console.log(blogs);
@@ -92,13 +113,19 @@ const Blogs = ({ blogs }) => {
   return (
     <>
       {blogs.loading ? (
-        <h3>Loading</h3>
+        <Box
+          sx={{
+            textAlign: "center",
+          }}
+        >
+          <Loading />
+        </Box>
       ) : blogs.failed ? (
-        <h3>Please Check Your Internet Connection</h3>
+        <FailedComponent />
       ) : (
         <Box mt={2}>
           <Grid container justifyContent={"center"}>
-            <Grid xs={6}>
+            <Grid item xs={6}>
               <Link
                 style={{
                   color: "white",
@@ -116,26 +143,46 @@ const Blogs = ({ blogs }) => {
               </Link>
             </Grid>
           </Grid>
-          <Grid
-            container
-            spacing={1}
-            justifyContent={"space-around"}
-            py={1}
-            mx={2}
-          >
+          <Grid container spacing={1} justifyContent={"space-around"} py={1}>
             {blogs.blogs.length === 0 ? (
-              <h3>There is no blog</h3>
+              <h3>There is no blog to show</h3>
             ) : (
-              blogs.blogs.map((blog, index) => {
+              sortedBlogs.map((blog, index) => {
                 return (
-                  <Grid key={index} xs={12} sm={12} md={6} lg={5} xl={5}>
+                  <Grid
+                    mx={2}
+                    item
+                    key={index}
+                    xs={12}
+                    sm={12}
+                    md={6}
+                    lg={5}
+                    xl={5}
+                  >
                     <Card className="card-blog" elevation={10} key={index}>
                       <CardActionArea>
                         <CardHeader
+                          avatar={<Avatar src="" />}
+                          action={
+                            <IconButton aria-label="settings">
+                              <MoreVertRounded />
+                            </IconButton>
+                          }
                           title={blog.title}
-                          subheader={blog.date}
+                          subheader={
+                            formatDistanceToNow(new Date(blog.date)) + " ago"
+                          } // to-do =>   date-fns
                           color="text.secondary"
                         />
+                        <CardMedia
+                          component="img"
+                          sx={{
+                            objectFit: "cover",
+                          }}
+                          height="190"
+                          srcSet={watersplash}
+                        />
+
                         <CardContent>{blog.description}</CardContent>
                       </CardActionArea>
                       <CardActions>
@@ -169,9 +216,14 @@ const Blogs = ({ blogs }) => {
           <Dialog fullWidth open={dialogOpen} onClose={handleDialog}>
             <DialogTitle>Delete Post Confirmation</DialogTitle>
             <DialogContent>
-              <DialogContentText>
-                <Typography
-                  component={"span"}
+              <DialogContentText
+                variant="body1"
+                fontFamily={"san-serif"}
+                fontSize={19}
+                mb={3}
+              >
+                {/* <Typography
+                  // component={"span"}
                   display={"block"}
                   variant="body1"
                   fontFamily={"san-serif"}
@@ -179,16 +231,29 @@ const Blogs = ({ blogs }) => {
                   mb={3}
                 >
                   Confirm you want to delete this post by typing post:
-                </Typography>
-                <TextField
-                  placeholder="post"
-                  size="small"
-                  fullWidth
-                  onChange={handleChangeDeleteWord}
-                  variant="standard"
-                  label="Delete Confirmation"
-                />
+                </Typography> */}
+                Confirm you want to delete this post by typing{" "}
+                <span
+                  style={{
+                    fontWeight: 700,
+                    color: "orange",
+                    textDecoration: "underline",
+                    textDecorationThickness: "3px",
+                  }}
+                >
+                  {" "}
+                  post
+                </span>{" "}
+                :
               </DialogContentText>
+              <TextField
+                placeholder="post"
+                size="small"
+                fullWidth
+                onChange={handleChangeDeleteWord}
+                variant="standard"
+                label="Delete Confirmation"
+              />
             </DialogContent>
             <DialogActions>
               <Button onClick={handleDialog} variant="contained">

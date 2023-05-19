@@ -27,7 +27,7 @@ export const getBlogs = createAsyncThunk(
       const dbInstactForLike = collection(database, "likes");
       const response = await getDocs(dbInstance);
       const respForLike = await getDocs(dbInstactForLike);
-
+      console.log(response.docs.length, "Length");
       if (response.docs.length === 0) {
         return {
           blogs: [],
@@ -56,7 +56,7 @@ export const getBlogs = createAsyncThunk(
         throw "something gone wrong";
       }
     } catch (err) {
-      // console.log(err, "error part");
+      console.log(err, "error part");
       return thunkAPI.rejectWithValue(err);
     }
   }
@@ -206,10 +206,48 @@ const blogsSlice = createSlice({
     failed: false,
   },
   reducers: {
-    addBlog: (state, action) => {
-      console.log(action);
-      state.blogs.push(action.payload);
+    // addBlog: (state, action) => {
+    //   console.log(action);
+    //   state.blogs.push(action.payload);
+    // },
+
+    addBlog: {
+      reducer(state, action) {
+        state.blogs.push(action.payload);
+      },
+      prepare(id, title, description) {
+        // The prepare call back return a new payload
+        // we can write our logic for making a new payload here...
+        return {
+          payload: {
+            id,
+            title,
+            description,
+            date: new Date().toISOString(),
+          },
+        };
+      },
     },
+
+    // addLike: (state, action) => {
+    //   state.likes.push(action.payload);
+    // },
+
+    addLike: {
+      reducer: (state, action) => {
+        state.likes.push(action.payload);
+      },
+      prepare: (blogId, id) => {
+        return {
+          payload: {
+            blogId,
+            id,
+            checked: false,
+          },
+        };
+      },
+    },
+
     changeLike: (state, action) => {
       console.log("changeLike: ", action.payload);
       console.log("state data: ", state.likes);
@@ -218,9 +256,6 @@ const blogsSlice = createSlice({
       );
       console.log(like, "change Like");
       like.checked = !like.checked;
-    },
-    addLike: (state, action) => {
-      state.likes.push(action.payload);
     },
     deleteBlog: (state, action) => {
       state.blogs = state.blogs.filter((blog) => blog.id !== action.payload);
@@ -241,7 +276,9 @@ const blogsSlice = createSlice({
       state.likes = action.payload.likes;
     },
     [getBlogs.rejected]: (state, action) => {
-      (state.blogs = []), (state.likes = []), (state.loading = false);
+      state.loading = false;
+      state.blogs = [];
+      state.likes = [];
       state.failed = true;
       console.log(action.payload);
     },

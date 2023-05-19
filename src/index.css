@@ -106,3 +106,7 @@ button:focus-visible {
 .commentButton:hover {
   animation: stop;
 }
+
+.cont {
+  margin: 0 !important;
+}
