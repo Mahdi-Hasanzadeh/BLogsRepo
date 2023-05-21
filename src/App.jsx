@@ -5,6 +5,8 @@ import { getBlogs } from "./redux.js";
 import { Route, Routes } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
+import Loading from "./Components/Loading";
+
 import {
   Navbar,
   Blogs,
@@ -14,25 +16,42 @@ import {
   LoginPage,
 } from "./Components/Items.js";
 import { Box, ThemeProvider, createTheme, useMediaQuery } from "@mui/material";
-import { ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { auth } from "./firebaseConfig";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import Loading from "./Components/Loading";
 
 function App() {
   const [userInfo, setUserInfo] = useState(null);
 
   const [showLoginPage, setShowLoginPage] = useState(true);
 
+  const dispatch = useDispatch();
+  // useEffect(() => {
+  //   dispatch(getBlogs());
+  // }, []);
+
   useEffect(() => {
     const listen = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserInfo(user);
         setShowLoginPage(false);
-        console.log(user.email);
+        setTimeout(() => {
+          toast.info("Welcome, " + user.displayName, {
+            position: "top-left",
+            autoClose: 2000,
+          });
+          dispatch(getBlogs());
+        }, 3500);
+
+        // console.log(user.email);
       } else {
         setUserInfo(null);
         setShowLoginPage(false);
+        toast.warning("Please login first", {
+          position: "top-left",
+          autoClose: 2000,
+          limit: 1,
+        });
       }
     });
   }, []);
@@ -42,16 +61,14 @@ function App() {
   const blogs = useSelector((state) => state.blogs);
 
   // console.log(blogs);
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(getBlogs());
-  }, []);
 
   const theme = createTheme({
     palette: {
       mode: "dark",
     },
   });
+
+  // return <LoginPage />;
 
   if (!userInfo) {
     if (showLoginPage) {
@@ -73,7 +90,6 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <ToastContainer />
       <Routes>
         {/* <Route path="/login" element={LoginPage}> */}
         {/* <ProtectedRoute> */}

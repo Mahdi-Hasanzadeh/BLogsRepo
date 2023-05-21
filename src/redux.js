@@ -6,6 +6,8 @@ import {
 
 import { database } from "./firebaseConfig";
 
+import cors from "cors";
+
 import {
   addDoc,
   collection,
@@ -17,6 +19,10 @@ import {
 } from "firebase/firestore";
 // import "firebase/firestore";
 // const url = "http://localhost:9000/";
+
+//cors declartation
+
+const myCors = cors({ origin: true });
 
 // Get Blogs from Database
 export const getBlogs = createAsyncThunk(

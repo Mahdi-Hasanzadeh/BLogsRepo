@@ -344,7 +344,6 @@ const SingleProduct = () => {
               container
               spacing={1}
               justifyContent={"center"}
-              mx={4}
             >
               <Grid item xs={10} mt={3}>
                 <Typography variant="h6" textAlign={"center"}>

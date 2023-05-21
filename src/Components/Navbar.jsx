@@ -19,6 +19,10 @@ import { Adb } from "@mui/icons-material";
 import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 
+import { auth } from "../firebaseConfig";
+
+import { signOut } from "firebase/auth";
+
 const pages = ["Home", "BLogs"];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
 
@@ -165,7 +169,7 @@ const Navabar = ({ userInfo }) => {
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                   <Avatar
-                    alt={userInfo.email.toUpperCase()}
+                    alt={userInfo.displayName}
                     src="/static/images/avatar/2.jpg"
                   />
                 </IconButton>
@@ -188,7 +192,21 @@ const Navabar = ({ userInfo }) => {
               >
                 {settings.map((setting) => (
                   <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                    <Typography textAlign="center">{setting}</Typography>
+                    {setting === "Logout" ? (
+                      <Button
+                        onClick={() => {
+                          signOut(auth);
+                        }}
+                        fullWidth
+                        textAlign="center"
+                      >
+                        {setting}
+                      </Button>
+                    ) : (
+                      <Button fullWidth textAlign="center">
+                        {setting}
+                      </Button>
+                    )}
                   </MenuItem>
                 ))}
               </Menu>
