@@ -231,11 +231,12 @@ const LoginPage = () => {
       >
         <Card
           sx={{
-            width: "75%",
+            width: { xs: "99%", sm: "75%" },
             height: "75%",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
+            flexWrap: "wrap",
           }}
           elevation={24}
         >
@@ -353,6 +354,7 @@ const LoginPage = () => {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
+                flexWrap: "wrap",
               }}
             >
               <Typography variant="body1">
