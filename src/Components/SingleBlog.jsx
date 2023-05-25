@@ -52,6 +52,7 @@ import Loading from "./Loading";
 import FailedComponent from "./FailedComp";
 
 import waterSplash from "../assets/water-splash.jpg";
+import { formatDistanceToNow } from "date-fns";
 const SingleProduct = () => {
   const [disabled, setDisabled] = useState(false);
   const [showComment, setShowComment] = useState(false);
@@ -202,16 +203,17 @@ const SingleProduct = () => {
                 >
                   <CardActionArea>
                     <CardHeader
-                      title={singleBlog.title}
-                      subheader={singleBlog.date}
+                      title={singleBlog.displayName}
+                      subheader={formatDistanceToNow(new Date(singleBlog.date))}
                     />
-                    {/* <CardMedia
+                    <CardMedia
                       component={"img"}
                       height="140"
                       src={waterSplash}
-                    /> */}
+                    />
                     <CardContent>
-                      <Typography variant="h6">
+                      <Typography variant="h6">{singleBlog.title}</Typography>
+                      <Typography variant="body1">
                         {singleBlog.description}
                       </Typography>
                     </CardContent>
@@ -239,6 +241,8 @@ const SingleProduct = () => {
                         className="commentButton"
                         onClick={() => {
                           setShowComment((prevData) => !prevData);
+                          // window.scrollBy(0, 1000);
+                          window.scrollTo(1000, 1000);
                         }}
                         variant="text"
                       >

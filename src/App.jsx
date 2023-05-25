@@ -35,6 +35,8 @@ function App() {
       if (user) {
         setUserInfo(user);
         setShowLoginPage(false);
+        console.log("userID:" + user.uid);
+
         setTimeout(() => {
           toast.info("Welcome, " + user.displayName, {
             position: "top-left",
@@ -95,9 +97,15 @@ function App() {
         {/* <ProtectedRoute> */}
         <Route path="/" element={<Navbar userInfo={userInfo} />}>
           <Route index element={<Index />} />
-          <Route path="BLogs" element={<Blogs blogs={blogs} />} />
+          <Route
+            path="BLogs"
+            element={<Blogs blogs={blogs} userInfo={userInfo} />}
+          />
           <Route path="Blogs/:BlogId" element={<SingleBlog />} />
-          <Route path="Blogs/Create-blog" element={<CreateBlog />} />
+          <Route
+            path="Blogs/Create-blog"
+            element={<CreateBlog userInfo={userInfo} />}
+          />
           <Route path="*" element={<h3>Not Found</h3>} />
         </Route>
         {/* </ProtectedRoute> */}

@@ -16,7 +16,7 @@ import { toast } from "react-toastify";
 import { SendRounded } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 
-const CreateBlog = () => {
+const CreateBlog = ({ userInfo }) => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -48,6 +48,8 @@ const CreateBlog = () => {
         date: new Date().toLocaleString(),
         title: formData.title,
         description: formData.description,
+        displayName: userInfo.displayName,
+        uid: userInfo.uid,
       });
 
       console.log("creating new Blog");
@@ -66,7 +68,15 @@ const CreateBlog = () => {
           //     description: formData.description,
           //   })
           // );
-          dispatch(addBlog(idForBlog, formData.title, formData.description));
+          dispatch(
+            addBlog(
+              idForBlog,
+              formData.title,
+              formData.description,
+              userInfo.displayName,
+              userInfo.uid
+            )
+          );
           // dispatch(
           //   addLike({
           //     blogId: idForBlog,

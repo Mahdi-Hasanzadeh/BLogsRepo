@@ -22,7 +22,7 @@ import {
 
 //cors declartation
 
-const myCors = cors({ origin: true });
+// const myCors = cors({ origin: true });
 
 // Get Blogs from Database
 export const getBlogs = createAsyncThunk(

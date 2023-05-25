@@ -45,10 +45,12 @@ import watersplash from "../assets/water-splash.jpg";
 
 import { formatDistanceToNow, parseISO } from "date-fns";
 
-const Blogs = ({ blogs }) => {
+const Blogs = ({ blogs, userInfo }) => {
   const sortedBlogs = blogs.blogs
     .slice()
     .sort((a, b) => a.date.localeCompare(b.date));
+
+  console.log("blogs section: " + blogs.blogs);
 
   const [disabled, setDisabled] = useState(false);
 
@@ -162,13 +164,13 @@ const Blogs = ({ blogs }) => {
                     <Card className="card-blog" elevation={10} key={index}>
                       <CardActionArea>
                         <CardHeader
-                          avatar={<Avatar src="" />}
+                          avatar={<Avatar src="" alt={blog.displayName} />}
                           action={
                             <IconButton aria-label="settings">
                               <MoreVertRounded />
                             </IconButton>
                           }
-                          title={blog.title}
+                          title={blog.displayName}
                           subheader={
                             formatDistanceToNow(new Date(blog.date)) + " ago"
                           } // to-do =>   date-fns
@@ -183,29 +185,34 @@ const Blogs = ({ blogs }) => {
                           srcSet={watersplash}
                         />
 
-                        <CardContent>{blog.description}</CardContent>
+                        <CardContent>
+                          <Typography variant="h6">{blog.title}</Typography>
+                          {/* {blog.description} */}
+                        </CardContent>
                       </CardActionArea>
                       <CardActions>
                         <Link to={`/Blogs/${blog.id}`}>
                           <Button variant="outlined">View Post</Button>
                         </Link>
-                        <LoadingButton
-                          variant="contained"
-                          color="error"
-                          loading={disabled}
-                          loadingPosition="end"
-                          onClick={() => {
-                            setDialogOpen(true);
-                            setId(blog.id);
-                            // handleDelete(blog.id);
-                          }}
-                          endIcon={<DeleteForeverRounded />}
-                          sx={{
-                            marginLeft: "auto",
-                          }}
-                        >
-                          {disabled ? "Deleting Post" : "Delete"}
-                        </LoadingButton>
+                        {blog.uid === userInfo.uid ? (
+                          <LoadingButton
+                            variant="contained"
+                            color="error"
+                            loading={disabled}
+                            loadingPosition="end"
+                            onClick={() => {
+                              setDialogOpen(true);
+                              setId(blog.id);
+                              // handleDelete(blog.id);
+                            }}
+                            endIcon={<DeleteForeverRounded />}
+                            sx={{
+                              marginLeft: "auto",
+                            }}
+                          >
+                            {disabled ? "Deleting Post" : "Delete"}
+                          </LoadingButton>
+                        ) : null}
                       </CardActions>
                     </Card>
                   </Grid>
