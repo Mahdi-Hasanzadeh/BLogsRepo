@@ -50,7 +50,10 @@ const Blogs = ({ blogs, userInfo }) => {
     .slice()
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  console.log("blogs section: " + blogs.blogs);
+  // console.log("userINfo" + userInfo.uid);
+  // console.log("uid In Blog: " + blogs);
+
+  // console.log("blogs section: " + blogs.blogs);
 
   const [disabled, setDisabled] = useState(false);
 
@@ -166,6 +169,7 @@ const Blogs = ({ blogs, userInfo }) => {
                         <CardHeader
                           avatar={<Avatar src="" alt={blog.displayName} />}
                           action={
+                            // to-do button console error
                             <IconButton aria-label="settings">
                               <MoreVertRounded />
                             </IconButton>

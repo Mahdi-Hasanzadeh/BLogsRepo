@@ -30,12 +30,38 @@ function App() {
   //   dispatch(getBlogs());
   // }, []);
 
+  // const listen = onAuthStateChanged(auth, (user) => {
+  //   if (user) {
+  //     setUserInfo(user);
+  //     setShowLoginPage(false);
+  //     console.log("userID:" + user.uid);
+
+  //     setTimeout(() => {
+  //       toast.info("Welcome, " + user.displayName, {
+  //         position: "top-left",
+  //         autoClose: 2000,
+  //       });
+  //       dispatch(getBlogs());
+  //     }, 3500);
+
+  //     // console.log(user.email);
+  //   } else {
+  //     setUserInfo(null);
+  //     setShowLoginPage(false);
+  //     toast.warning("Please login first", {
+  //       position: "top-left",
+  //       autoClose: 2000,
+  //       limit: 1,
+  //     });
+  //   }
+  // });
+
   useEffect(() => {
     const listen = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserInfo(user);
         setShowLoginPage(false);
-        console.log("userID:" + user.uid);
+        // console.log("userID:" + user.uid);
 
         setTimeout(() => {
           toast.info("Welcome, " + user.displayName, {
@@ -56,7 +82,7 @@ function App() {
         });
       }
     });
-  }, []);
+  }, [userInfo]);
 
   //const darkTheme = useMediaQuery(`(prefers-color-scheme: dark)`);
 
@@ -96,12 +122,15 @@ function App() {
         {/* <Route path="/login" element={LoginPage}> */}
         {/* <ProtectedRoute> */}
         <Route path="/" element={<Navbar userInfo={userInfo} />}>
-          <Route index element={<Index />} />
+          <Route index element={<Index userInfo={userInfo} />} />
           <Route
             path="BLogs"
             element={<Blogs blogs={blogs} userInfo={userInfo} />}
           />
-          <Route path="Blogs/:BlogId" element={<SingleBlog />} />
+          <Route
+            path="Blogs/:BlogId"
+            element={<SingleBlog userInfo={userInfo} />}
+          />
           <Route
             path="Blogs/Create-blog"
             element={<CreateBlog userInfo={userInfo} />}

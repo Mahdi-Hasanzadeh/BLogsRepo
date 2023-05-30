@@ -40,6 +40,7 @@ const CreateBlog = ({ userInfo }) => {
   };
 
   const handleSubmit = async (event) => {
+    // console.log(userInfo.uid + "userInfo ID");
     event.preventDefault();
     if (formData.title !== "" && formData.description !== "") {
       // const id = nanoid();

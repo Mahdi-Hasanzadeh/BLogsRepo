@@ -42,6 +42,9 @@ import {
   addCommentOfBlogToDatabase,
   addComment,
   getComments,
+  addLikeForASpecificUser,
+  changeLikeOfUser,
+  addLikeOfUser,
 } from "../redux";
 
 import LoadingButton from "@mui/lab/LoadingButton";
@@ -53,34 +56,45 @@ import FailedComponent from "./FailedComp";
 
 import waterSplash from "../assets/water-splash.jpg";
 import { formatDistanceToNow } from "date-fns";
-const SingleProduct = () => {
-  const [disabled, setDisabled] = useState(false);
-  const [showComment, setShowComment] = useState(false);
-
-  const [loadingButton, setLoadingButton] = useState(false);
-
+const SingleProduct = ({ userInfo }) => {
   const navigate = useNavigate();
   const params = useParams();
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
   const dispatch = useDispatch();
 
-  const stateOfBlogs = useSelector((state) => state.blogs);
+  const [disabled, setDisabled] = useState(false);
+  const [showComment, setShowComment] = useState(false);
+  const [loadingButton, setLoadingButton] = useState(false);
+  const [formData, setFormData] = useState({
+    // fullname: "",
+    comment: "",
+  });
 
-  // console.log(stateOfBlogs.likes);
+  const stateOfBlogs = useSelector((state) => state.blogs);
 
   const singleBlog = stateOfBlogs.blogs.find(
     (blog) => blog.id === params.BlogId
   );
 
-  // console.log(singleBlog);
-
   const like = stateOfBlogs.likes.find((blog) => blog.blogId === params.BlogId);
 
-  const [formData, setFormData] = useState({
-    fullname: "",
-    comment: "",
-  });
+  const user = stateOfBlogs.users.find(
+    (user) => user.uid === userInfo.uid && user.blogId === params.BlogId
+  );
+
+  const totalLike = stateOfBlogs.users.filter(
+    (user) => user.blogId === params.BlogId && user.checked === true
+  );
+  // console.log(totalLike, "likes");
+
+  const commentsState = useSelector((state) => state.comments);
+
+  // console.log(commentsState, "single Blog");
+
+  const commentsOfBlog = commentsState.comments.filter(
+    (comment) => comment.blogId === params.BlogId
+  );
 
   const handleChange = (event) => {
     const { value, type, name } = event.target;
@@ -93,13 +107,13 @@ const SingleProduct = () => {
   };
 
   const handleSubmit = async () => {
-    if (formData.fullname !== "" && formData.comment !== "") {
+    if (formData.comment !== "") {
       setLoadingButton(true);
       // console.log("blog id: ", singleBlog.id);
       // console.log("like id:", like.id);
       const commentId = await addCommentOfBlogToDatabase(
         singleBlog.id,
-        formData.fullname,
+        userInfo.displayName,
         formData.comment,
         new Date().toLocaleString()
       );
@@ -109,7 +123,7 @@ const SingleProduct = () => {
           addComment({
             id: commentId,
             blogId: singleBlog.id,
-            fullName: formData.fullname,
+            fullName: userInfo.displayName,
             comment: formData.comment,
             date: new Date().toLocaleString(),
           })
@@ -127,26 +141,71 @@ const SingleProduct = () => {
   };
 
   // console.log(like, "single");
+  // console.log(user, "user Like");
 
   const hanldeChecked = async () => {
     setDisabled(true);
     // console.log("handleChecked");
     // console.log("id: ", like.id);
-    const resp = await chagneLikeOfABlog({
-      id: like.id,
-      checked: !like.checked,
-    });
 
-    if (resp) {
-      setDisabled(false);
-      dispatch(
-        changeLike({
-          id: like.blogId,
-        })
-      );
+    if (!user) {
+      const res = await addLikeForASpecificUser({
+        uid: userInfo.uid,
+        likeId: like.id,
+        blogId: like.blogId,
+        checked: false,
+      });
+
+      if (res) {
+        dispatch(
+          addLikeOfUser({
+            id: res,
+            uid: userInfo.uid,
+            likeId: like.id,
+            blogId: like.blogId,
+            checked: false,
+          })
+        );
+        // console.log("user added,id: ", res);
+        const resp = await chagneLikeOfABlog({
+          id: res,
+          checked: true,
+        });
+        if (resp) {
+          dispatch(
+            changeLikeOfUser({
+              uid: userInfo.uid,
+              blogId: like.blogId,
+            })
+          );
+          setDisabled(false);
+        } else {
+          setDisabled(false);
+          toast.error("Something gone wrong,try again");
+        }
+      } else {
+        setDisabled(false);
+        toast.error("Something gone wrong,try again");
+      }
     } else {
-      setDisabled(false);
-      toast.error("Please Check Your Internet Connection");
+      // console.log("user exitsted for this blog");
+      // console.log("userId: ", user.uid);
+      const resp = await chagneLikeOfABlog({
+        id: user.id,
+        checked: !user.checked,
+      });
+      if (resp) {
+        dispatch(
+          changeLikeOfUser({
+            uid: user.uid,
+            blogId: user.blogId,
+          })
+        );
+        setDisabled(false);
+      } else {
+        setDisabled(false);
+        toast.error("Something gone wrong,check you internet connection");
+      }
     }
   };
 
@@ -154,14 +213,6 @@ const SingleProduct = () => {
     // console.log("getComments");
     dispatch(getComments());
   }, []);
-
-  const commentsState = useSelector((state) => state.comments);
-
-  // console.log(commentsState, "single Blog");
-
-  const commentsOfBlog = commentsState.comments.filter(
-    (comment) => comment.blogId === params.BlogId
-  );
 
   useEffect(() => {
     if (isMdUp) {
@@ -204,7 +255,9 @@ const SingleProduct = () => {
                   <CardActionArea>
                     <CardHeader
                       title={singleBlog.displayName}
-                      subheader={formatDistanceToNow(new Date(singleBlog.date))}
+                      subheader={
+                        formatDistanceToNow(new Date(singleBlog.date)) + " ago"
+                      }
                     />
                     <CardMedia
                       component={"img"}
@@ -217,11 +270,17 @@ const SingleProduct = () => {
                         {singleBlog.description}
                       </Typography>
                     </CardContent>
+
                     <Tooltip title="Like" placement="top" arrow>
                       <Checkbox
                         disabled={disabled}
                         icon={<FavoriteBorder />}
-                        checked={like.checked}
+                        checked={
+                          params.BlogId === user?.blogId &&
+                          userInfo.uid === user?.uid
+                            ? user.checked
+                            : false
+                        }
                         onClick={hanldeChecked}
                         checkedIcon={
                           <Favorite
@@ -232,8 +291,27 @@ const SingleProduct = () => {
                         }
                       />
                     </Tooltip>
+
+                    <Typography
+                      mr={1}
+                      display={"inline-block"}
+                      color="text.secondary"
+                    >
+                      {totalLike.length} like
+                      {totalLike.length <= 1 ? null : "s"}
+                    </Typography>
+
+                    <Typography
+                      mr={1}
+                      display={"inline-block"}
+                      color="text.secondary"
+                    >
+                      {commentsOfBlog.length} comment
+                      {commentsOfBlog.length <= 1 ? null : "s"}
+                    </Typography>
+
                     <Tooltip
-                      placement="right-start"
+                      placement="bottom"
                       arrow
                       title="toggle between Comments & Write Comment section"
                     >
@@ -244,15 +322,11 @@ const SingleProduct = () => {
                           // window.scrollBy(0, 1000);
                           window.scrollTo(1000, 1000);
                         }}
-                        variant="text"
+                        variant="outlined"
                       >
                         Comment
                       </Button>
                     </Tooltip>
-
-                    <Typography display={"inline-block"} color="text.secondary">
-                      {commentsOfBlog.length} comments
-                    </Typography>
                   </CardActionArea>
                   <CardActions>
                     <Link to="/BLogs">
@@ -271,6 +345,7 @@ const SingleProduct = () => {
               }}
             >
               <Grid
+                item
                 mt={3}
                 display={isMdUp ? "block" : showComment ? "none" : "block"}
                 xs={12}
@@ -298,7 +373,17 @@ const SingleProduct = () => {
                   ) : commentsState.failed ? (
                     <h3>Loading Failed ,click here to reload</h3>
                   ) : commentsOfBlog.length === 0 ? (
-                    <h3>There is no comment</h3>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Typography textAlign={"center"} variant="h6">
+                        No Comments, write your comment by clicking on comment
+                        button
+                      </Typography>
+                    </Box>
                   ) : (
                     commentsOfBlog.map((comment, index) => {
                       return (
@@ -361,7 +446,7 @@ const SingleProduct = () => {
                   }
                 </Typography>
               </Grid>
-              <Grid item xs={12} sm={6} md={4}>
+              {/* <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   fullWidth
                   name="fullname"
@@ -371,7 +456,7 @@ const SingleProduct = () => {
                   value={formData.fullname}
                   onChange={handleChange}
                 />
-              </Grid>
+              </Grid> */}
               <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   fullWidth

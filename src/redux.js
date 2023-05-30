@@ -16,6 +16,7 @@ import {
   updateDoc,
   deleteDoc,
   getDoc,
+  QuerySnapshot,
 } from "firebase/firestore";
 // import "firebase/firestore";
 // const url = "http://localhost:9000/";
@@ -31,13 +32,16 @@ export const getBlogs = createAsyncThunk(
     try {
       const dbInstance = collection(database, "blogs");
       const dbInstactForLike = collection(database, "likes");
+      const dbInstanceForUsers = collection(database, "users");
       const response = await getDocs(dbInstance);
       const respForLike = await getDocs(dbInstactForLike);
-      console.log(response.docs.length, "Length");
+      const respForUsers = await getDocs(dbInstanceForUsers);
+      // console.log(response.docs.length, "Length");
       if (response.docs.length === 0) {
         return {
           blogs: [],
           likes: [],
+          users: [],
         };
       } else if (response.docs.length > 0 && respForLike.docs.length > 0) {
         const blogs = response.docs.map((item) => {
@@ -54,9 +58,16 @@ export const getBlogs = createAsyncThunk(
             ...item.data(),
           };
         });
+        const users = respForUsers.docs.map((item) => {
+          return {
+            id: item.id,
+            ...item.data(),
+          };
+        });
         return {
           blogs,
           likes,
+          users,
         };
       } else {
         throw "something gone wrong";
@@ -119,18 +130,40 @@ export const addBlogToDatabase = async (newBlog) => {
   }
 };
 
+export const addLikeForASpecificUser = async (arg) => {
+  try {
+    // console.log("uid: ", arg.uid);
+    // const dbInstance = collection(database, "users");
+    const docRef = collection(database, "users");
+    // const resp = getDoc();
+    const resp = await addDoc(docRef, {
+      uid: arg.uid,
+      likeId: arg.likeId,
+      blogId: arg.blogId,
+      checked: false,
+    });
+    // console.log(resp.id, "return");
+    return resp.id;
+  } catch (err) {
+    console.log(err.message);
+    return false;
+  }
+};
+
 // Update Like at Database
 export const chagneLikeOfABlog = async (arg) => {
   try {
-    const docRef = doc(database, "likes", arg.id);
-    console.log(docRef);
-    updateDoc(docRef, {
+    // console.log(arg, "arg");
+    const docRef = doc(database, "users", arg.id);
+    // console.log(docRef);
+    const resp = await updateDoc(docRef, {
       checked: arg.checked,
     });
 
+    // console.log(resp, "mmmm");
     return true;
   } catch (err) {
-    // console.log(err.message);
+    console.log(err.message);
     return false;
   }
   // const response = await updateDoc(dbInstance, "likes", 1, {
@@ -209,6 +242,7 @@ const blogsSlice = createSlice({
     loading: true,
     blogs: [],
     likes: [],
+    users: [],
     failed: false,
   },
   reducers: {
@@ -221,7 +255,7 @@ const blogsSlice = createSlice({
       reducer(state, action) {
         state.blogs.push(action.payload);
       },
-      prepare(id, title, description) {
+      prepare(id, title, description, displayName, uid) {
         // The prepare call back return a new payload
         // we can write our logic for making a new payload here...
         return {
@@ -230,6 +264,8 @@ const blogsSlice = createSlice({
             title,
             description,
             date: new Date().toISOString(),
+            displayName,
+            uid,
           },
         };
       },
@@ -255,12 +291,12 @@ const blogsSlice = createSlice({
     },
 
     changeLike: (state, action) => {
-      console.log("changeLike: ", action.payload);
-      console.log("state data: ", state.likes);
+      // console.log("changeLike: ", action.payload);
+      // console.log("state data: ", state.likes);
       const like = state.likes.find(
         (item) => item.blogId === action.payload.id
       );
-      console.log(like, "change Like");
+      // console.log(like, "change Like");
       like.checked = !like.checked;
     },
     deleteBlog: (state, action) => {
@@ -268,6 +304,20 @@ const blogsSlice = createSlice({
     },
     deleteLike: (state, action) => {
       state.likes = state.likes.filter((like) => like.id !== action.payload);
+    },
+
+    addLikeOfUser: (state, action) => {
+      state.users.push(action.payload);
+    },
+
+    changeLikeOfUser: (state, action) => {
+      const user = state.users.find(
+        (user) =>
+          user.uid === action.payload.uid &&
+          user.blogId === action.payload.blogId
+      );
+      // console.log("checked: ", user.checked);
+      user.checked = !user.checked;
     },
   },
 
@@ -280,13 +330,15 @@ const blogsSlice = createSlice({
       console.log("fullfilled", action.payload);
       state.blogs = action.payload.blogs;
       state.likes = action.payload.likes;
+      state.users = action.payload.users;
     },
     [getBlogs.rejected]: (state, action) => {
       state.loading = false;
       state.blogs = [];
       state.likes = [];
+      state.users = [];
       state.failed = true;
-      console.log(action.payload);
+      console.log("rejected");
     },
   },
 });
@@ -340,8 +392,15 @@ const commentSlice = createSlice({
   },
 });
 
-export const { addBlog, changeLike, addLike, deleteBlog, deleteLike } =
-  blogsSlice.actions;
+export const {
+  addBlog,
+  changeLike,
+  addLike,
+  deleteBlog,
+  deleteLike,
+  changeLikeOfUser,
+  addLikeOfUser,
+} = blogsSlice.actions;
 
 export const { addComment } = commentSlice.actions;
 

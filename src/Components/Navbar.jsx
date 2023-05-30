@@ -13,6 +13,8 @@ import {
   useTheme,
 } from "@mui/material";
 
+import { useNavigate } from "react-router-dom";
+
 import MenuIcon from "@mui/icons-material/Menu";
 import { Adb } from "@mui/icons-material";
 
@@ -46,6 +48,8 @@ const Navabar = ({ userInfo }) => {
   };
 
   const theme = useTheme();
+
+  const navigate = useNavigate();
 
   let Active = false;
   return (
@@ -196,16 +200,14 @@ const Navabar = ({ userInfo }) => {
                       <Button
                         onClick={() => {
                           signOut(auth);
+                          navigate("/");
                         }}
                         fullWidth
-                        textAlign="center"
                       >
                         {setting}
                       </Button>
                     ) : (
-                      <Button fullWidth textAlign="center">
-                        {setting}
-                      </Button>
+                      <Button fullWidth>{setting}</Button>
                     )}
                   </MenuItem>
                 ))}
